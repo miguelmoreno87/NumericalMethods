@@ -1,32 +1,26 @@
-function [sol,iter,ACOC,incre1,incre2] = Newton(fun,x0,tol,maxiter)
-digits(200)
-x0=x0(:);
-iter=0;
-[fx0,dfx0]=feval(fun,x0);
-incre1=tol+1;
-incre2=tol+1;
-p=[];
-while incre2+incre1>tol && iter<maxiter
-    
-    %Linea NEWTON
-    x1=x0-fx0/dfx0;
-    %
-    
-    %actualizo criterio de parada
-    incre1=norm(x1-x0);
-    p=[p incre1];
-    x0=x1;
-    [fx0,dfx0]=feval(fun,x0);
-    incre2=norm(fx0);
-    iter=iter+1;
-end
-% calculo de ACOC
-ACOC=log(p(3:end)./p(2:end-1))./log(p(2:end-1)./p(1:end-2));
+function [k,x_opt,min]=Newton(f,Df,H,x,eps)
+% Se halla el mínimo de un campo escalar 'f' de variables reales 
+% introducido como función anónima, dado un punto inicial (array columna)
+% 'x'. Como argumentos también deben pasarse el gradiente de la función 
+% 'Df' y  su matriz Hessiana 'H', también como funciones anónimas. 
+% Por ejemplo:
+% Df = @(x) [4*(x(1)-2)^3; 2*x(1)*x(2)] (Vector columna)
+% 'eps' es la tolerancia. 
+% Se devuelve el número de iteraciones empleado 'k', el óptimo 'x_opt' y 
+% el mínimo valor de la función 'min'.
 
-sol=x1;
-incre1=vpa(incre1,6);
-incre2=vpa(incre2,6);
-ACOC=vpa(ACOC,6);
-ACOC=ACOC(:);
-sol=vpa(sol,10);
+k = 0;
+norm = sqrt(Df(x)'*Df(x)); % Norma del gradiente
+
+% Se establece un número máximo de iteraciones
+while norm > eps && k < 100
+    k = k + 1;
+    p = -H(x)\Df(x);
+    x = x + p;
+    norm = sqrt(Df(x)'*Df(x));
+end
+
+x_opt = x;
+min = f(x_opt);
+
 end
